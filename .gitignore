@@ -1,3 +1,9 @@
+# VS Code folder
+.vscode/
+
+# Random Output files
+./*.txt
+
 # Prerequisites
 *.d
 
