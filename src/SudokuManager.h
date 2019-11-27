@@ -1,5 +1,5 @@
-#ifndef SUDOKU_H
-#define SUDOKU_H
+#ifndef SUDOKUMANAGER_H
+#define SUDOKUMANAGER_H
 #include<iostream>
 #include <fstream>
 #include <string>

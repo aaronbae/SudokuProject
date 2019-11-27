@@ -1,5 +1,5 @@
-main : main.o SudokuManager.o
-	g++ -Wall -g -o main main.o SudokuManager.o
+sudoku : main.o SudokuManager.o
+	g++ -Wall -g -o sudoku main.o SudokuManager.o
 
 main.o : main.cpp SudokuManager.h
 	g++ -Wall -g -c main.cpp
