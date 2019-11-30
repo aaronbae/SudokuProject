@@ -1,5 +1,4 @@
 #include "Sudoku.h"
-using namespace std;
 
 Sudoku::Sudoku(int a[N][N])
 {

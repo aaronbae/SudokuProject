@@ -1,56 +1,58 @@
-//
-// Created by Sakshi Agarwal on 11/7/19.
-//
-
-#include <memory>
-#include <random>
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <math.h>
-#include <limits.h>
-#include "Sudoku.h"
 #include "SimulatedAnnealing.h"
+SimulatedAnnealing::SimulatedAnnealing(double T, double Tmin, double a, int num,int fstop, double p) {
+  this->T = T;
+  this->Tmin = Tmin;
+  this->alpha = a;
+  this->numIterations = num;
+  this->f = fstop;
+  this->p = p;
+}
 
-/**  Thresholding parameters -
- * initial Temperature T
- * numIterations - number of Iterations for a particular temp T
- * change the threshold probability
-**/
+State SimulatedAnnealing::run(Sudoku *Board) {
 
-int main()
-{
-    int mat[9][9] =
-            {
-                {0, -1, -1, -1, -1, -1, -1, -1, 1},
-                {-1, -1, 7, -1, -1, 8, -1, 2, 6},
-                {6, -1, -1, 4, 2, -1, -1, 7, -1},
-                {-1, 7, -1, -1, 6, 2, -1, 4, 3},
-                {-1, -1, 5, 3, -1, 1, 6, -1, -1},
-                {8, 6, -1, 7, 4, -1, -1, 0, -1},
-                {-1, 0, -1, -1, 7, 6, -1, -1, 8},
-                {2, 3, -1, 5, -1, -1, 7, -1, -1},
-                {7, -1, -1, -1, -1, -1, -1, -1, 0}
-            };
+  Board->init_solution();
+  Board->printSudoku();
 
-/**Create the sudoku board with matrix **/
-    Sudoku Board(mat);
+  State currState(Board->mat,Board->fix);
+  currState.printState();
 
-/**    Parameters for SA algorithm **/
-    int T=20;
-    double Tmin = 0.001;
-    double alpha = 0.9;
-    int numIterations = 500;
-    double fstop = 0;
-    double p = 0.6;
-/**    Initialise SA with the parameters **/
-    SimulatedAnnealingAlgorithm SA(T,Tmin,alpha,numIterations, fstop, p);
+  State best = currState;
+  while (T > Tmin) 
+  {
+    for (int i = 0; i < numIterations; i++) 
+    {
+      cout <<"Iteration for T = "<<T<<"-----"<<i<< endl;
 
-/**    Call the SA algorithm which returns the solution state of Sudoku **/
-    state sol = SA.run(&Board);
-/**    Print the solution & fitness value **/
-    sol.printState();
-    std::cout<<sol.fitness();
+      State next = currState.neighbour();
+      //std::cout <<"Printing next state "<< std::endl;
+      //next.printState();
 
-   return 0;
+      int e = currState.fitness() ;
+      //std::cout <<"current fitness value received  "<< std::endl;
+
+      int ep = next.fitness();
+      cout <<"fitness current ---- "<<e << endl;
+      cout <<"fitness next  ---- "<<ep << endl;
+
+      double threshold = ep < e ? 1.0 : exp(-1.0 * (ep-e) / T);
+
+      cout <<"threshold value ---- "<<threshold << endl;
+
+      if (threshold > p)
+          currState = next;
+
+      cout <<"Fitness value ------"<<currState.fitness() << endl;
+
+      if (currState.fitness() <= f)
+          return currState;
+
+      // Check if we are the best seen so far, and if so, copy.
+      if (best.fitness() < currState.fitness()) {
+          best = currState;
+          cout << "Best: " << best.fitness() << '\n';
+      }
+    }
+    T *= alpha; // Decreases T, cooling phase
+  }
+  return best;
 }

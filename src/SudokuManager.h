@@ -10,6 +10,7 @@
 
 #include <cmath>
 #include <ctime>
+using namespace std;
 
 class SudokuManager 
 {
@@ -21,15 +22,17 @@ class SudokuManager
     bool isValidRow(int i, int val);
     bool isValidBlock(int i, int j, int val);
     static int getRand(int max);
-    static char file_names[8][20];
+    static char file_names[8][27];
+    static string output_folder;
     
   public:
     SudokuManager();
     SudokuManager(int size);
-    SudokuManager(std::string file_name);
+    SudokuManager(string file_name);
+    SudokuManager(int input_size, int** input_board);
     int** getBoard();
     void print();
-    void save(std::string output_name);
+    void save(string output_name);
     static SudokuManager benchmarkBoard(int index);
     static SudokuManager generateBoard(int size, int difficulty);
     static void seed();

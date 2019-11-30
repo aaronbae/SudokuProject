@@ -1,9 +1,10 @@
 #include "SudokuManager.h"
-using namespace std;
 
-char SudokuManager::file_names[8][20] = {"boards/hexa-20.txt", "boards/hexa-21.txt", 
-  "boards/hexa-50.txt", "boards/hexa-80.txt", "boards/hexa-21.txt", 
-  "boards/hexa-82.txt", "boards/hexa-100.txt", "boards/hexa-101.txt"};
+string SudokuManager::output_folder = "boards/";
+
+char SudokuManager::file_names[8][27] = {"benchmarks/hexa-20.txt", "benchmarks/hexa-21.txt", 
+  "benchmarks/hexa-50.txt", "benchmarks/hexa-80.txt", "benchmarks/hexa-21.txt", 
+  "benchmarks/hexa-82.txt", "benchmarks/hexa-100.txt", "benchmarks/hexa-101.txt"};
 
 SudokuManager::SudokuManager()
 {
@@ -80,6 +81,20 @@ SudokuManager::SudokuManager(std::string file_name)
   }
   myfile.close();
 }
+SudokuManager::SudokuManager(int input_size, int** input_board)
+{
+  size = input_size;
+  board = new int*[size];
+  for(int i = 0; i < size; i++)
+  {
+    board[i] = new int[size];
+    for(int j = 0; j < size; j++)
+    {
+      board[i][j] = input_board[i][j];
+    }
+  }
+}
+
 int** SudokuManager::getBoard()
 {
   int** boardCopy = new int*[size];
@@ -133,7 +148,8 @@ void SudokuManager::print()
 void SudokuManager::save(string output_name)
 {
   ofstream myfile;
-  myfile.open(output_name);
+  string final_file(output_folder + output_name);
+  myfile.open(final_file);
   
   for(int i = 0; i < size; i++)
   {
