@@ -76,8 +76,8 @@ int main()
       {7, -1, -1, -1, -1, -1, -1, -1, 0}
     };
   //testSudokuManager();
-  //testGeneticAlgorithm(mat);
-  testSimulatedAnnealing(mat);
+  testGeneticAlgorithm(mat);
+  //testSimulatedAnnealing(mat);
   //testBacktrack();
   return 0;
 }
