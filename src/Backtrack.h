@@ -1,53 +1,52 @@
 #ifndef BACKTRACK_H
 #define BACKTRACK_H
 
+#define BOARD_SIZE 9
+
+#include <set>
 #include <iostream>
-#include <algorithm>
+#include <queue>
+#include <math.h>
+#include <utility>
+#include <stdlib.h>
 #include <vector>
-#include <map>
-#include <stack>
-#include <cmath>
-#include <string>
+#include <algorithm>
 using namespace std;
 
 class Backtrack
 {
-  public: 
-    int maxSquaresFilled;
-    int maxDepth; 
-    int depth; 
-    int sqrtSize;
-    int size;
-    int** board;
-    stack<int*> assignment_and_domain_changes; // maintains assignment and domain changes. length 3 [i , j , domain_value]
-    map<pair<int, int>, bool*> domain;
-    void print_board();
-    void print_domain_size();
+  public:
+    static int backtracks;
+    typedef set <pair <pair <int, int>, pair <int, int> > > Constraints;
+    typedef vector < vector <vector <int> > > Domains;
+    typedef vector <pair <pair<int, int>, int> > Assignments;
+    
+    struct Comparator {
+      set <pair<int, int> > unassigned;
+      Domains Y;
+      pair <int, int> var;
+      Comparator(pair <int, int> var, set <pair<int, int> > unassigned, Domains Y);
+      bool operator() (int p1, int p2);
+    };
 
-    int update_squares_filled();
+    static bool is_consistent(const pair <int, int> &var, const int &domain_val, const Assignments &assigned, const Constraints &C);
 
-    Backtrack(int board_size, int** input_board);
-    bool* get_domain(int i, int j);
-    vector<int> get_domain_in_indices(int i, int j);
-    bool check_domain(int i, int j, int value);
-    void set_domain(int i, int j, int value, bool possible);
-    int get_domain_size(int i, int j);
+    static vector <pair <int, int>> get_neighbors(const pair <int, int> &var, const set <pair<int, int> > &unassigned);
 
-    int assign(int i, int j, int value);
-    void revert_changes(int stack_index);
+    static pair <int, int> select_unassigned_var(set <pair<int, int> > &unassigned, const Domains &Y);
 
-    bool within_box(int i, int j, int x, int y);
-    bool relevant(int i, int j, int x, int y);
-    bool is_consistent(int i, int j, int val);
-    vector<pair<int, int>> get_neighbors(int i, int j);
+    static bool revise (const pair <int, int> &xi, const pair <int, int> &xj, Domains &Y);
 
-    pair<int, int> select_unassigned_var(); // MRV 
-    bool AC3(int i, int j);
-    bool AC3_recurrent(int i, int j); // forward checking
-    int number_of_eliminations(int i, int j, int value);
-    vector<int> order_domain_vals(int i, int j); // Least Constraining Value
+    static bool AC3(Assignments &assigned, set <pair<int, int> > &unassigned, const pair <int, int> &var, Domains &Y);
 
-    bool backtrack();
-    bool run();
+    static bool forward_checking(Assignments &assigned, set <pair<int, int> > &unassigned, const pair <int, int> &var, Domains &Y, const Constraints &C, const int &domain_val);
+
+    static int number_of_eliminations(set <pair<int, int> > unassigned, pair <int, int> var, Domains Y, int domain_val);
+
+    static vector <int> order_domain_vals (pair <int, int> var, vector <int> domain, set <pair<int, int> > unassigned, Domains Y);
+
+    static bool backtrack(Assignments &assigned, set <pair<int, int> > unassigned, Domains Y, const Constraints &C);
+
+    static bool run(int board[BOARD_SIZE][BOARD_SIZE]);
 };
 #endif

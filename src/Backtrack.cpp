@@ -1,401 +1,327 @@
 #include "Backtrack.h"
 
-void Backtrack::print_board()
+int Backtrack::backtracks = 0; // number of backtracks
+
+bool Backtrack::is_consistent(const pair <int, int> &var, const int &domain_val, const Assignments &assigned, const Constraints &C)
 {
-  cout << "-----------------------------------------" << endl;
-  int divider = sqrt(size);
-  for(int i = 0; i < size; i++)
-  {
-    for(int j = 0; j < size; j++)
-    {
-      string temp = to_string(board[i][j]);
-      if(temp.length() == 1)
-      {
-        cout << " " << board[i][j] << " ";
-      } else 
-      {
-        // Empty spaces are *
-        if(board[i][j] == -1)
-        {
-          cout << " * ";
-        } else 
-        {
-          cout << board[i][j] << " ";
+    for (int j = 0; j < assigned.size(); j++) {
+        if (assigned[j].second == domain_val) {
+            pair <int, int> p1, p2;
+            if (var.first*10 + var.second < 10*assigned[j].first.first + assigned[j].first.second) {
+                p1 = var;
+                p2 = assigned[j].first;
+            }
+            else {
+                p1 = assigned[j].first;
+                p2 = var;
+            }
+            
+            if (C.find(make_pair(p1, p2)) != C.end()) {
+                return false;
+            }
         }
-      }
-      // Column divider
-      if(j % divider == divider - 1)
-      {
-        cout << "  ";
-      }
     }
-    cout << endl;
-    // Row divider
-    if(i % divider == divider - 1)
-    {
-      cout << endl;
-    }
-  }
-}
-
-void Backtrack::print_domain_size()
-{
-  cout << "-----------------------------------------" << endl;
-  int divider = sqrt(size);
-  for(int i = 0; i < size; i++)
-  {
-    for(int j = 0; j < size; j++)
-    {
-      int val = get_domain_size(i,j);
-      string temp = to_string(val);
-      if(temp.length() == 1)
-      {
-        cout << " " << val << " ";
-      } else 
-      {
-        cout << val << " ";
-      }
-      // Column divider
-      if(j % divider == divider - 1)
-      {
-        cout << "  ";
-      }
-    }
-    cout << endl;
-    // Row divider
-    if(i % divider == divider - 1)
-    {
-      cout << endl;
-    }
-  }
-  cout << "-----------------------------------------" << endl;
-}
-
-Backtrack::Backtrack(int board_size, int** input_board)
-{
-  sqrtSize = (int) sqrt(board_size);
-  size = board_size;
-  maxSquaresFilled = 0;
-  depth = 0;
-  maxDepth = 0;
-  assignment_and_domain_changes = stack<int*>();
-  board = new int*[size];
-  for(int i = 0; i < size; i++)
-  {
-    board[i] = new int[size];
-    for(int j = 0; j < size; j++)
-    {
-      int val = input_board[i][j];
-      board[i][j] = val;
-
-      pair<int, int> coord(i,j);
-      bool* empty_domain = new bool[size];
-      for(int k = 0; k < size; k++)
-      {
-        empty_domain[k] = (k == val) || (val == -1);
-      }
-      domain[coord] =  empty_domain;
-      
-    }
-  }
-  // Init AC3
-  for(int i = 0; i < size; i++)
-  {
-    for(int j = 0; j < size; j++)
-    {
-      if(board[i][j] != -1)
-      {
-        AC3(i, j);
-      }
-    }
-  }
-}
-bool* Backtrack::get_domain(int i, int j)
-{
-  bool* old_domain = domain[pair<int, int>(i,j)];
-  bool* new_domain = new bool[size];
-  for(int k = 0; k < size; k++)
-  {
-    new_domain[k] = old_domain[k];
-  }
-  return new_domain;
-}
-vector<int> Backtrack::get_domain_in_indices(int i, int j)
-{
-  vector<int> indices;
-  bool* temp_domain = get_domain(i, j);
-  for(int k = 0; k < size; k++)
-  {
-    if(temp_domain[k])
-    {
-      indices.push_back(k);
-    }
-  }
-  return indices;
-}
-bool Backtrack::check_domain(int i, int j, int value)
-{
-  return domain[pair<int, int>(i,j)][value];
-}
-void Backtrack::set_domain(int i, int j, int value, bool possible)
-{
-  domain[pair<int, int>(i,j)][value] = possible;
-  assignment_and_domain_changes.push(new int[3]{i, j, value});
-}
-void Backtrack::revert_changes(int stack_index)
-{
-  while(stack_index < assignment_and_domain_changes.size())
-  {
-    int* d_change = assignment_and_domain_changes.top();
-    int i = d_change[0];
-    int j = d_change[1];
-    int k = d_change[2];
-    if(k == -1)
-    {
-      // revert value assignment 
-      board[i][j] = -1;
-    }
-    else
-    {
-      // revert domain change
-      bool curr_val = domain[pair<int, int>(i, j)][k];
-      domain[pair<int, int>(i, j)][k] = !curr_val;
-
-    }  
-    assignment_and_domain_changes.pop();
-  }
-}
-int Backtrack::assign(int i, int j, int value)
-{
-  int stack_index = assignment_and_domain_changes.size();
-  board[i][j] = value;
-  // we actually don't need to know the value it changed to
-  assignment_and_domain_changes.push(new int[3]{i, j, -1});
-  for(int k = 0; k < size; k++)
-  {
-    if(k != value)
-    {
-      set_domain(i, j, k, false);
-    } 
-    else {
-      set_domain(i, j, k, true);
-    }
-  }
-  return stack_index;
-}
-int Backtrack::get_domain_size(int i, int j)
-{
-  int total = 0;
-  bool* temp_domain = get_domain(i,j);
-  for(int k = 0; k < size; k++)
-  {
-    total += temp_domain[k];
-  }
-  return total;
-}
-
-bool Backtrack::within_box(int i, int j, int x, int y)
-{
-  int rowIndex = (int) i/sqrtSize;
-  int colIndex = (int) j/sqrtSize;
-  bool rowTest = rowIndex * sqrtSize <= x && x < (rowIndex + 1) * sqrtSize;
-  bool colTest = colIndex * sqrtSize <= y && y < (colIndex + 1) * sqrtSize;
-  return rowTest && colTest;
-}
-bool Backtrack::relevant(int i, int j, int x, int y)
-{
-  return x == i || y == j || within_box(i, j, x, y);
-}
-bool Backtrack::is_consistent(int i, int j, int val)
-{
-  for(int x = 0; x < size; x++)
-  {
-    for(int y = 0; y < size; y++)
-    {
-      if(val == board[x][y] && relevant(i, j, x, y))
-      {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-vector<pair<int, int>> Backtrack::get_neighbors(int i, int j)
-{
-  vector<pair<int, int>> neighbors;
-  for(int x = 0; x < size; x++)
-  {
-    for(int y = 0; y < size; y++)
-    {
-      if(board[x][y] == -1 && relevant(i, j, x, y) && (x != i || y != j))
-      {
-        neighbors.push_back(pair<int, int>(x,y));
-      }
-    }
-  }
-  return neighbors;
-}
-bool Backtrack::AC3(int i, int j)
-{
-  // if the value is unassigned at (i,j), skip
-  bool current_i_j_value_arc_consistent = true;
-  if(board[i][j] == -1)
-  {
-    return current_i_j_value_arc_consistent;
-  }
-  int this_val = board[i][j];
-  vector<pair<int, int>> neighbors = get_neighbors(i, j);
-  // iterate through all the neighbors
-  for(auto  n : neighbors)
-  {
-    int x = n.first;
-    int y = n.second;
-    // find domain values that work for the neighbor
-    bool domain_changed = check_domain(x, y, this_val);
-    set_domain(x, y, this_val, false);
-
-    if(get_domain_size(x, y) == 0)
-    {
-      return false; // need to backtrack
-    }
-    else if(get_domain_size(x, y) == 1)
-    {
-      int only_possible_value = get_domain_in_indices(x,y)[0];
-      assign(x, y, only_possible_value);
-      AC3(x, y);
-    }
-
-    // forward checking
-    if(domain_changed)
-    {
-      //current_i_j_value_arc_consistent = AC3_recurrent(x, y); 
-    }
-  }
-  return current_i_j_value_arc_consistent; // green light to next assignment
-}
-bool Backtrack::AC3_recurrent(int i, int j)
-{
-  // not implemented
-}
-int Backtrack::number_of_eliminations(int i, int j, int value)
-{
-  int total_elimination = 0;
-  vector<pair<int, int>> neighbors = get_neighbors(i, j);
-  for(auto p : neighbors)
-  {
-    if(check_domain(p.first, p.second, value))
-    {
-      total_elimination += 1;
-    }
-  }
-  return total_elimination;
-}
-vector<int> Backtrack::order_domain_vals(int i, int j)
-{
-  vector<int> domain_values = get_domain_in_indices(i, j);
-
-  // stack the domain values and elimination values
-  vector<pair<int, int>> domain_and_elimination_values;
-  for(auto d_value : domain_values)
-  {
-    domain_and_elimination_values.push_back(pair<int, int>(d_value, number_of_eliminations(i,j,d_value)));
-  }
-  // sort by bigger elimination value
-  sort(domain_and_elimination_values.begin(), domain_and_elimination_values.end(), [](pair<int, int> p1, pair<int, int> p2){
-    return p1.second > p2. second;
-  });
-  // reconstruct domain values from the sorted stacked values
-  vector<int> orderd_domain_values;
-  for(auto p : domain_and_elimination_values)
-  {
-    orderd_domain_values.push_back(p.first);
-  }
-  return orderd_domain_values;
-}
-pair<int, int> Backtrack::select_unassigned_var()
-{
-  pair<int, int> best(-1, -1);
-  int smallest_domain_size = size + 1; // arbitrarily size + 1
-  for( auto const& [key, val] : domain )
-  { 
-    int current_domain_size = get_domain_size(key.first, key.second);
-    if(current_domain_size < smallest_domain_size && current_domain_size > 1)
-    {
-      smallest_domain_size = current_domain_size;
-      best = key;
-    }
-  }
-  return best;
-} 
-int Backtrack::update_squares_filled()
-{
-  int temp = 0;
-  for(int i = 0; i < size; i++)
-  {
-    for(int j = 0; j < size; j++)
-    {
-      if(board[i][j] != -1)
-      {
-        temp += 1;
-      }
-    }
-  }
-  maxSquaresFilled = max(temp, maxSquaresFilled);
-}
-bool Backtrack::backtrack()
-{
-  depth += 1;
-  maxDepth = max(maxDepth, depth);
-  update_squares_filled();
-  cout << depth << " / "<< maxDepth<<  "\t\t" << maxSquaresFilled << endl;
-  pair<int, int> temp = select_unassigned_var();
-  int i = temp.first;
-  int j = temp.second;
-  // full board
-  if(i == -1 && j == -1)
-  {
     return true;
-  }
-  vector<int> orderd_domain = order_domain_vals(i, j);
-  for(auto potential_assignment: orderd_domain)
-  {
-    if(is_consistent(i, j, potential_assignment))
-    { 
-      bool* old_domain = get_domain(i, j);
-      int stack_revert_index = assign(i, j, potential_assignment);
-      if(AC3(i, j))
-      {
-        //print_board();
-        //print_domain_size();
-        //string nothingimportant;
-        //cin >> nothingimportant;
-        bool result = backtrack();
-        if(result)
-        {
-          return result;
-        }
-      }
-      revert_changes(stack_revert_index);
-    }
-    else
-    {
-      set_domain(i, j, potential_assignment, false);
-    }
-  }
-  depth -= 1;
-  return false;
 }
-bool Backtrack::run()
+
+vector <pair <int, int>> Backtrack::get_neighbors(const pair <int, int> &var, const set <pair<int, int> > &unassigned)
 {
-  pair<int, int> old_var(-1, -1);
-  pair<int, int> curr_var = select_unassigned_var();
-  while(old_var.first != curr_var.first || old_var.second != curr_var.second)
-  {
-    bool test = backtrack();
-    old_var = curr_var;
-    curr_var = select_unassigned_var();
-    if(test)
-      return true;
-  }  
-  return false;
+    vector <pair <int, int>> result;
+    int number_of_boxes = sqrt(BOARD_SIZE);
+    for (int i = 0; i<BOARD_SIZE; i++) {
+        for (int j = 0; j<BOARD_SIZE; j++) {
+            if (make_pair(i, j) != var && (i == var.first || j == var.second || ((i/number_of_boxes == var.first/number_of_boxes) && j/number_of_boxes == var.second/number_of_boxes)) && unassigned.find(make_pair(i, j)) != unassigned.end()) {
+                result.push_back(make_pair(i, j));
+            }
+        }
+    }
+    return result;
 }
+
+pair <int, int> Backtrack::select_unassigned_var(set <pair<int, int> > &unassigned, const Domains &Y)
+{
+    // MRV
+    // degree heuristic resulted in more backtracks, so commented it out
+    set <pair<int, int> >::iterator iter, current_iter;
+    int current_min = INT8_MAX;
+    int degree_max = INT8_MIN;
+    pair <int, int> current_pair = *unassigned.begin();
+    for (iter = unassigned.begin(); iter != unassigned.end(); iter++) {
+        int domain_size = Y[(*iter).first][(*iter).second].size();
+        //int degree = get_neighbors(*iter, unassigned).size();
+        if (domain_size < current_min //|| (domain_size == current_min && degree > degree_max)
+            ) {
+            current_min = domain_size;
+            //degree_max = degree;
+            current_pair = make_pair((*iter).first, (*iter).second);
+            current_iter = iter;
+        }
+    }
+    unassigned.erase(current_iter);
+    return current_pair;
+}
+
+bool Backtrack::revise (const pair <int, int> &xi, const pair <int, int> &xj, Domains &Y)
+{
+    bool revised = false;
+    vector <int>::iterator iter = Y[xi.first][xi.second].begin();
+    while(iter != Y[xi.first][xi.second].end()) {
+        bool found = false;
+        for (int j = 0; j < Y[xj.first][xj.second].size(); j++) {
+            if (Y[xj.first][xj.second][j] != *iter) {
+                found = true;
+            }
+        }
+        if (!found) {
+            Y[xi.first][xi.second].erase(iter);
+            iter--;
+            revised = true;
+        }
+        iter++;
+    }
+    return revised;
+}
+
+bool Backtrack::AC3(Assignments &assigned, set <pair<int, int> > &unassigned, const pair <int, int> &var, Domains &Y)
+{
+    queue <pair <pair <int, int>, pair<int, int>>> q;
+    vector <pair <int, int> > neighbors = get_neighbors(var, unassigned);
+    for (int i = 0; i<neighbors.size(); i++) {
+        q.push(make_pair(neighbors[i], var));
+    }
+    pair <pair <int, int>, pair<int, int>> current_arc;
+    while (q.size()) {
+        current_arc = q.front();
+        q.pop();
+        if (revise(current_arc.first, current_arc.second, Y)) {
+            if (Y[current_arc.first.first][current_arc.first.second].size() == 0) {
+                return false;
+            }
+            else if (Y[current_arc.first.first][current_arc.first.second].size() == 1){
+                assigned.push_back(make_pair(make_pair(current_arc.first.first, current_arc.first.second), Y[current_arc.first.first][current_arc.first.second][0]));
+                set <pair<int, int> >::iterator iter = unassigned.find(current_arc.first);
+                if (iter != unassigned.end()) {
+                    unassigned.erase(iter);
+                }
+            }
+
+            neighbors = get_neighbors(current_arc.first, unassigned);
+            for (int i = 0; i<neighbors.size(); i++) {
+                if (neighbors[i] != current_arc.second) {
+                    q.push(make_pair(neighbors[i], current_arc.first));
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
+bool Backtrack::forward_checking(Assignments &assigned, set <pair<int, int> > &unassigned, const pair <int, int> &var, Domains &Y, const Constraints &C, const int &domain_val)
+{
+    vector <pair <int, int> > neighbors = get_neighbors(var, unassigned);
+    for (int i = 0; i<neighbors.size(); i++) {
+        for (int j = 0; j<Y[neighbors[i].first][neighbors[i].second].size(); j++) {
+            if (Y[neighbors[i].first][neighbors[i].second][j] == domain_val) {
+                Y[neighbors[i].first][neighbors[i].second].erase(Y[neighbors[i].first][neighbors[i].second].begin() + j);
+                if (Y[neighbors[i].first][neighbors[i].second].size() == 0) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
+int Backtrack::number_of_eliminations(set <pair<int, int> > unassigned, pair <int, int> var, Domains Y, int domain_val)
+{
+    int result=0;
+    vector <pair <int, int> > neighbors = get_neighbors(var, unassigned);
+    for (int i = 0; i<neighbors.size(); i++) {
+        for (int j = 0; j<Y[neighbors[i].first][neighbors[i].second].size(); j++) {
+            if (Y[neighbors[i].first][neighbors[i].second][j] == domain_val) {
+                result+=1;
+            }
+        }
+    }
+    return result;
+}
+
+Backtrack::Comparator::Comparator(pair <int, int> var, set <pair<int, int> > unassigned, Domains Y) {
+  this->var = var; 
+  this->unassigned = unassigned; 
+  this->Y = Y;
+}
+
+bool Backtrack::Comparator::operator() (int p1, int p2)
+{
+    return (Backtrack::number_of_eliminations(this->unassigned, this->var, this->Y, p1) > Backtrack::number_of_eliminations(this->unassigned, this->var, this->Y, p2));
+}
+
+vector <int> Backtrack::order_domain_vals (pair <int, int> var, vector <int> domain, set <pair<int, int> > unassigned, Domains Y)
+{
+    vector <int> result = domain;
+    
+    // least constraining value heuristic, but "most constraining" actually works better!?
+    sort(result.begin(), result.end(), Comparator(var, unassigned, Y));
+    //qsort(&result[0], result.size(), sizeof(int), Comparator(var, unassigned, Y).operator());
+
+    return result;
+}
+
+bool Backtrack::backtrack(Assignments &assigned, set <pair<int, int> > unassigned, Domains Y, const Constraints &C)
+{
+    backtracks++;
+    if (!unassigned.size()) {
+        return true;
+    }
+    pair<int, int> var = select_unassigned_var(unassigned, Y);
+    vector <int> domain = order_domain_vals(var, Y[var.first][var.second], unassigned, Y);
+    for (int i = 0; i < domain.size(); i++) {
+        if (is_consistent(var, domain[i], assigned, C)) {
+            int old_assigned_size = assigned.size();
+            assigned.push_back(make_pair(make_pair(var.first, var.second), domain[i]));
+            Domains newY(Y);
+            newY[var.first][var.second].clear();
+            newY[var.first][var.second].push_back(domain[i]);
+            set <pair<int, int> > newUnassigned(unassigned);
+            if (AC3(assigned, newUnassigned, var, newY) //&& forward_checking(assigned, newUnassigned, var, newY, C, domain[i])
+                ) {
+                bool result = backtrack(assigned, newUnassigned, newY, C);
+                if (result) {
+                    return result;
+                }
+            }
+            int difference = assigned.size()-old_assigned_size;
+            for (int i = 0; i< difference; i++) {
+                assigned.pop_back();
+            }
+        }
+    }
+    return false;
+}
+
+bool Backtrack::run(int board[BOARD_SIZE][BOARD_SIZE])
+{
+    backtracks = 0;
+    // initialize domain for each index
+    Domains Y(BOARD_SIZE, vector <vector <int> >(BOARD_SIZE, vector <int>()));
+    for (int i = 0; i<BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == -1) {
+                for (int k = 0; k < BOARD_SIZE; k++) {
+                    Y[i][j].push_back(k+1);
+                }
+            }
+            else {
+                Y[i][j].push_back(board[i][j]);
+            }
+        }
+    }
+    
+    // represent "not equal to" constraints as pairs of pairs: ((xi, xj), (yi, yj)) means board elements x and y cannot be the same
+    // elements x and y each have i, j index as pair elements
+    // populate constraints
+    // first add row alldiffs, then column alldiffs, lastly box alldiffs
+    Constraints C;
+    // row alldiffs
+    for (int i = 0; i< BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE - 1; j++) {
+            for (int k = j+1; k < BOARD_SIZE; k++) {
+                C.insert(make_pair(make_pair(i, j), make_pair(i, k)));
+            }
+        }
+    }
+    
+    // column alldiffs
+    for (int i = 0; i< BOARD_SIZE - 1; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            for (int k = i+1; k < BOARD_SIZE; k++) {
+                C.insert(make_pair(make_pair(i, j), make_pair(k, j)));
+            }
+        }
+    }
+        
+    // box alldiffs
+    int number_of_boxes = sqrt(BOARD_SIZE);
+    for (int i = 0; i < number_of_boxes; i++) {
+        for (int j = 0; j < number_of_boxes; j++) {
+            for (int x = i*number_of_boxes; x < (i+1)*number_of_boxes; x++) {
+                for (int y = j*number_of_boxes; y < (j+1)*number_of_boxes; y++) {
+                    for (int z = i*number_of_boxes; z < (i+1)*number_of_boxes; z++) {
+                        for (int w = j*number_of_boxes; w < (j+1)*number_of_boxes; w++) {
+                            if (x!=z || y != w) {
+                                if (C.find(make_pair(make_pair(z, w), make_pair(x, y))) == C.end()) {
+                                    C.insert(make_pair(make_pair(x, y), make_pair(z, w)));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // initialize vectors for assigned and unassigned variables
+    set <pair<int, int> > unassigned;
+    Assignments assigned = {};
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] == -1) {
+                unassigned.insert(make_pair(i, j));
+            }
+            else {
+                assigned.push_back(make_pair(make_pair(i, j), board[i][j]));
+            }
+        }
+    }
+    // call recursive backtrack
+    bool result = backtrack(assigned, unassigned, Y, C);
+    for (int i = 0; i < assigned.size(); i++) {
+        board[assigned[i].first.first][assigned[i].first.second] = assigned[i].second;
+    }
+    if(result)
+    {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                cout << board[i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << "number of backtracks: " << backtracks << endl;
+    }
+    else {
+        cout << "fail" << endl;
+    }
+    return result;
+}
+/*
+int main()
+{
+    // initialize board
+    int board[BOARD_SIZE][BOARD_SIZE];
+
+    for (int i = 0; i<BOARD_SIZE; i++) {
+        for (int j = 0; j<BOARD_SIZE; j++) {
+            board[i][j] = -1;
+        }
+    }
+
+    int result = run(board);
+    
+    if (result) {
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                cout << board[i][j] << " ";
+            }
+            cout << endl;
+        }
+        cout << "number of backtracks: " << backtracks << endl;
+    }
+    else {
+        cout << "fail" << endl;
+    }
+
+}
+
+*/
