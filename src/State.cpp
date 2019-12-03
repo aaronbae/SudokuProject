@@ -117,12 +117,12 @@ int State::fitness()
 }
 void State::printState()
 {
-  //cout << "Printing state matrix now ------- \n";
-  //for (int i = 0; i<Utils::N; i++)
-  //{
-  //  for (int j = 0; j<Utils::N; j++)
-  //    cout<<curr[i][j]<<" ";
-  //  cout<<"\n";
-  //}
-  //cout<<"\n";
+  cout << "Printing state matrix now ------- \n";
+  for (int i = 0; i<Utils::N; i++)
+  {
+    for (int j = 0; j<Utils::N; j++)
+      cout<<curr[i][j]<<" ";
+    cout<<"\n";
+  }
+  cout<<"\n";
 }
