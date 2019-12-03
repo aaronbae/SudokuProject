@@ -1,5 +1,6 @@
 #include<iostream>
 #include "src/Sudoku.h"
+#include "src/SudokuGenerator.h"
 #include "src/SimulatedAnnealing.h"
 #include "src/GeneticAlgorithm.h"
 #include "src/Backtrack.h"
@@ -60,9 +61,12 @@ void testSudoku()
 }
 void testSimulatedAnnealing()
 {
-  Sudoku a = Sudoku("./boards/test.txt");
-  //Sudoku a = Sudoku::benchmarkBoard(1); 
+  //Sudoku a = Sudoku("./boards/test.txt");
+  Sudoku a = Sudoku::benchmarkBoard(1); 
   SimulatedAnnealing b = SimulatedAnnealing(a);
+  b.alpha = 0.9995;
+  b.T = 4;
+  b.Tmin = 2.0;
   b.printCurrentBoard();
   bool result = b.run();
   cout << "Simulated Annealing Result: "<< result << endl;

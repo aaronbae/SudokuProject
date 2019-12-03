@@ -2,6 +2,10 @@
 
 string Utils::GENES = "012345678"; //9abcdefghijklmno";    // Valid Genes
 
+void Utils::seed()
+{
+  srand(time(nullptr));
+}
 int Utils::randomGenerator(int num)
 {
     return (int) floor((rand()%(num)));
