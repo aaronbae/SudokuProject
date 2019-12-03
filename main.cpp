@@ -54,10 +54,10 @@ void testSimulatedAnnealing(int mat[9][9])
 void testBacktrack()
 {
   SudokuManager::seed();
-  SudokuManager b = SudokuManager::benchmarkBoard(2); // get the first benchmark board
-  //SudokuManager b = SudokuManager("boards/guaranteed_solution.txt");
+  SudokuManager b = SudokuManager::benchmarkBoard(6); // get the first benchmark board
+  //SudokuManager b = SudokuManager("boards/guaranteed_solution2.txt");
   Backtrack solver = Backtrack(16, b.getBoard());
-  bool solved = solver.backtrack();
+  bool solved = solver.run();
   cout << "Solved: " << solved << endl;
   solver.print_board();
   solver.print_domain_size();

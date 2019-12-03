@@ -13,7 +13,9 @@ using namespace std;
 class Backtrack
 {
   public: 
-    int squares_remaining; 
+    int maxSquaresFilled;
+    int maxDepth; 
+    int depth; 
     int sqrtSize;
     int size;
     int** board;
@@ -21,6 +23,8 @@ class Backtrack
     map<pair<int, int>, bool*> domain;
     void print_board();
     void print_domain_size();
+
+    int update_squares_filled();
 
     Backtrack(int board_size, int** input_board);
     bool* get_domain(int i, int j);
@@ -44,5 +48,6 @@ class Backtrack
     vector<int> order_domain_vals(int i, int j); // Least Constraining Value
 
     bool backtrack();
+    bool run();
 };
 #endif

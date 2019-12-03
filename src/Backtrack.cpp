@@ -75,7 +75,9 @@ Backtrack::Backtrack(int board_size, int** input_board)
 {
   sqrtSize = (int) sqrt(board_size);
   size = board_size;
-  squares_remaining = size * size;
+  maxSquaresFilled = 0;
+  depth = 0;
+  maxDepth = 0;
   assignment_and_domain_changes = stack<int*>();
   board = new int*[size];
   for(int i = 0; i < size; i++)
@@ -85,10 +87,6 @@ Backtrack::Backtrack(int board_size, int** input_board)
     {
       int val = input_board[i][j];
       board[i][j] = val;
-      if(val != -1)
-      {
-        squares_remaining -= 1;
-      }
 
       pair<int, int> coord(i,j);
       bool* empty_domain = new bool[size];
@@ -105,7 +103,10 @@ Backtrack::Backtrack(int board_size, int** input_board)
   {
     for(int j = 0; j < size; j++)
     {
-      AC3(i, j);
+      if(board[i][j] != -1)
+      {
+        AC3(i, j);
+      }
     }
   }
 }
@@ -153,7 +154,6 @@ void Backtrack::revert_changes(int stack_index)
     {
       // revert value assignment 
       board[i][j] = -1;
-      squares_remaining += 1;
     }
     else
     {
@@ -167,10 +167,8 @@ void Backtrack::revert_changes(int stack_index)
 }
 int Backtrack::assign(int i, int j, int value)
 {
-  cout << "ASSIGN "<< i << " , "<< j<< endl;
   int stack_index = assignment_and_domain_changes.size();
   board[i][j] = value;
-  squares_remaining -= 1;
   // we actually don't need to know the value it changed to
   assignment_and_domain_changes.push(new int[3]{i, j, -1});
   for(int k = 0; k < size; k++)
@@ -237,21 +235,6 @@ vector<pair<int, int>> Backtrack::get_neighbors(int i, int j)
   }
   return neighbors;
 }
-pair<int, int> Backtrack::select_unassigned_var()
-{
-  pair<int, int> best(-1, -1);
-  int smallest_domain_size = size + 1; // arbitrarily size + 1
-  for( auto const& [key, val] : domain )
-  { 
-    int current_domain_size = get_domain_size(key.first, key.second);
-    if(current_domain_size < smallest_domain_size && current_domain_size > 1)
-    {
-      smallest_domain_size = current_domain_size;
-      best = key;
-    }
-  }
-  return best;
-} 
 bool Backtrack::AC3(int i, int j)
 {
   // if the value is unassigned at (i,j), skip
@@ -278,7 +261,6 @@ bool Backtrack::AC3(int i, int j)
     else if(get_domain_size(x, y) == 1)
     {
       int only_possible_value = get_domain_in_indices(x,y)[0];
-      cout << "AC3 ";
       assign(x, y, only_possible_value);
       AC3(x, y);
     }
@@ -330,8 +312,42 @@ vector<int> Backtrack::order_domain_vals(int i, int j)
   }
   return orderd_domain_values;
 }
+pair<int, int> Backtrack::select_unassigned_var()
+{
+  pair<int, int> best(-1, -1);
+  int smallest_domain_size = size + 1; // arbitrarily size + 1
+  for( auto const& [key, val] : domain )
+  { 
+    int current_domain_size = get_domain_size(key.first, key.second);
+    if(current_domain_size < smallest_domain_size && current_domain_size > 1)
+    {
+      smallest_domain_size = current_domain_size;
+      best = key;
+    }
+  }
+  return best;
+} 
+int Backtrack::update_squares_filled()
+{
+  int temp = 0;
+  for(int i = 0; i < size; i++)
+  {
+    for(int j = 0; j < size; j++)
+    {
+      if(board[i][j] != -1)
+      {
+        temp += 1;
+      }
+    }
+  }
+  maxSquaresFilled = max(temp, maxSquaresFilled);
+}
 bool Backtrack::backtrack()
 {
+  depth += 1;
+  maxDepth = max(maxDepth, depth);
+  update_squares_filled();
+  cout << depth << " / "<< maxDepth<<  "\t\t" << maxSquaresFilled << endl;
   pair<int, int> temp = select_unassigned_var();
   int i = temp.first;
   int j = temp.second;
@@ -346,11 +362,10 @@ bool Backtrack::backtrack()
     if(is_consistent(i, j, potential_assignment))
     { 
       bool* old_domain = get_domain(i, j);
-      cout << "BACKTRACK ";
       int stack_revert_index = assign(i, j, potential_assignment);
       if(AC3(i, j))
       {
-        print_board();
+        //print_board();
         //print_domain_size();
         //string nothingimportant;
         //cin >> nothingimportant;
@@ -367,5 +382,20 @@ bool Backtrack::backtrack()
       set_domain(i, j, potential_assignment, false);
     }
   }
+  depth -= 1;
+  return false;
+}
+bool Backtrack::run()
+{
+  pair<int, int> old_var(-1, -1);
+  pair<int, int> curr_var = select_unassigned_var();
+  while(old_var.first != curr_var.first || old_var.second != curr_var.second)
+  {
+    bool test = backtrack();
+    old_var = curr_var;
+    curr_var = select_unassigned_var();
+    if(test)
+      return true;
+  }  
   return false;
 }
