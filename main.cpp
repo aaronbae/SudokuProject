@@ -51,30 +51,18 @@ void testSimulatedAnnealing(int mat[9][9])
   sol.printState();
   std::cout<<sol.fitness();
 }
-void testBacktrack()
+void testBacktrack(int mat[9][9])
 {
-  int mat[9][9] =
-    {
-      {0, -1, -1, -1, -1, -1, -1, -1, 1},
-      {-1, -1, 7, -1, -1, 8, -1, 2, 6},
-      {6, -1, -1, 4, 2, -1, -1, 7, -1},
-      {-1, 7, -1, -1, 6, 2, -1, 4, 3},
-      {-1, -1, 5, 3, -1, 1, 6, -1, -1},
-      {8, 6, -1, 7, 4, -1, -1, 0, -1},
-      {-1, 0, -1, -1, 7, 6, -1, -1, 8},
-      {2, 3, -1, 5, -1, -1, 7, -1, -1},
-      {7, -1, -1, -1, -1, -1, -1, -1, 0}
-    };
   //SudokuManager::seed();
   //SudokuManager b = SudokuManager::benchmarkBoard(6); // get the first benchmark board
   //SudokuManager b = SudokuManager("boards/guaranteed_solution2.txt");
   //Backtrack solver = Backtrack(16, b.getBoard());
   int result = Backtrack::run(mat);
+  cout << "RESULT: " << result << endl;
 }
 
 int main()
 {
-  /*
   int mat[9][9] =
     {
       {0, -1, -1, -1, -1, -1, -1, -1, 1},
@@ -87,11 +75,9 @@ int main()
       {2, 3, -1, 5, -1, -1, 7, -1, -1},
       {7, -1, -1, -1, -1, -1, -1, -1, 0}
     };
-  */
   //testSudokuManager();
   //testGeneticAlgorithm(mat);
-  //testSimulatedAnnealing(mat);
-  cout << "SOMETHING" << endl;
-  testBacktrack();
+  testSimulatedAnnealing(mat);
+  //testBacktrack();
   return 0;
 }
