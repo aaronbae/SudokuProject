@@ -23,14 +23,17 @@ void testGeneticAlgorithm(int mat[9][9])
 
 void testSimulatedAnnealing()
 {
-  Sudoku a = SudokuGenerator::generateGuarantee(9, 1, 10);
+  Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 159);
   SimulatedAnnealing b = SimulatedAnnealing(a);
-  
+
   b.alpha = 0.9995;
   b.T = 4;
-  b.Tmin = 2.0;
+  //b.numIterations = 10;
+  //b.Tmin = 2.0;
 
   bool result = b.run();
+  a.print();
+  cout << "=============================="<<endl;
   cout << "Simulated Annealing Result: "<< result << endl;
   b.printCurrentBoard();
 }

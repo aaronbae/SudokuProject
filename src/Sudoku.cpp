@@ -89,7 +89,7 @@ Sudoku::Sudoku(std::string file_name)
       board[i] = new int[size];
       for (auto v: row) 
       {
-        board[i][j] = v;
+        board[i][j] = v  % size; // mod so we get the values in [0,size)
         j += 1;
       }
       i += 1;
@@ -106,7 +106,7 @@ Sudoku::Sudoku(int input_size, int** input_board)
     board[i] = new int[size];
     for(int j = 0; j < size; j++)
     {
-      board[i][j] = input_board[i][j];
+      board[i][j] = input_board[i][j] % input_size;
     }
   }
 }
