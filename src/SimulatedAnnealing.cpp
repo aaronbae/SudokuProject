@@ -2,6 +2,7 @@
 
 SimulatedAnnealing::SimulatedAnnealing(Sudoku inputSudoku)
 {
+  // default
   double inputT = 20;
   double inputTmin = 0.001;
   double inputAlpha = 0.9;
@@ -94,11 +95,15 @@ void SimulatedAnnealing::printCurrentBoard()
 {
   current.print();
 }
-bool SimulatedAnnealing::run()
+bool SimulatedAnnealing::run(int trialNumber)
 {
+  Logger shit = Logger();
+  shit.open("./logs/simulated_annealing"+to_string(trialNumber)+".txt");
+
   int currentFitnessScore = Utils::fitness(current);
   if(currentFitnessScore == 0)
   {
+    shit.close();
     return true;
   }
   double currTemperature = T;
@@ -109,21 +114,33 @@ bool SimulatedAnnealing::run()
       Sudoku neighbor = getNeighbor();
       int neighborsFitnessScore = Utils::fitness(neighbor);
       double threshold = neighborsFitnessScore < currentFitnessScore ? 1.0 : exp(-1.0 * (neighborsFitnessScore - currentFitnessScore) / currTemperature);
+       
 
       if (threshold > p)
       {
         current = neighbor;
         currentFitnessScore = neighborsFitnessScore;
         cout<<"currT: "<<currTemperature<<"/"<<T<<"\tI: "<<i<<"/"<<numIterations<<"\tNew Fit: "<<currentFitnessScore<<"\tThresh: "<<threshold<<endl;
+        vector<double> logRow;
+        logRow.push_back(currTemperature);
+        logRow.push_back(T);
+        logRow.push_back(i);
+        logRow.push_back(numIterations);
+        logRow.push_back(currentFitnessScore);
+        logRow.push_back(neighborsFitnessScore);
+        logRow.push_back(threshold);
+        shit.log(logRow);     
       }
       if (currentFitnessScore <= fStop)
       {
-        cout<<"Stopped because currentFitnessScore <= fstop : fstop = "<<fStop<<endl;
+        cout<<"Stopped because currentFitnessScore <= fstop : fstop = "<<fStop<<endl;  
+        shit.close();
         return true;
       }
     }
     currTemperature = currTemperature * alpha; // Decreases T, cooling phase
   }
   cout<<"Stopped because Temperature"<<endl;
+  shit.close();
   return false;
 }

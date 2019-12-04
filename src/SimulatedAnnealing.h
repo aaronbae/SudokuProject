@@ -1,7 +1,3 @@
-//
-// Created by Sakshi Agarwal on 11/7/19.
-//
-
 #ifndef SIMULATED_ANNEALING_H
 #define SIMULATED_ANNEALING_H
 #include <memory>
@@ -14,11 +10,13 @@
 #include <vector>
 #include "Sudoku.h"
 #include "Utils.h"
+#include "Logger.h"
 using namespace std;
 
 class SimulatedAnnealing
 {
   private: 
+    static const int NUM_ELEMENTS_IN_LOG_ROW = 7;
     Sudoku current;
     vector<pair<int, int>> freePoints;
 
@@ -39,7 +37,8 @@ class SimulatedAnnealing
     
     Sudoku getNeighbor();
     void printCurrentBoard();
+    bool log(vector<double> row);
 
-    bool run();
+    bool run(int trialNumber);
 };
 #endif
