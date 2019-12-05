@@ -13,12 +13,12 @@ void testGeneticAlgorithm(int mat[9][9])
   GeneticAlgorithm Board(mat);
 
   // Parameters for Genetic algorithm
-  int population_size=100; //size of Gene pool
+  int population_size=10; //size of Gene pool
   int stop=0; //number of generations to run until forced to stop; to go until completion set to 0
   //!!!PLEASE use steps of 10% when adjusting the parameters below to avoid segmentation faults!!!
   int elitism=10; //best percentage of candidates go to new gen unchanged; elitism=10 -> best 10%
   int eligible=50; //best percentage of candidates get to mate for new gen; eligible=50 -> best 50%
-  float mutation=0.1; //chance of random gene for offspring instead of parents'; mutation=0.1 -> 10% chance
+  float mutation=0.4; //chance of random gene for offspring instead of parents'; mutation=0.1 -> 10% chance
 
   Board.compute(population_size, elitism, eligible, mutation, stop);
 }
@@ -55,14 +55,14 @@ void testSimulatedAnnealing()
 }
 void testBacktrack()
 {
-  Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 20);
+  Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 10);
   int result = Backtrack::run(a.size, a.board);
   cout << "RESULT: " << result << endl;
 }
 
 int main()
 {
-/*
+
   int mat[9][9] =
     {
       {0, -1, -1, -1, -1, -1, -1, -1, 1},
@@ -75,10 +75,10 @@ int main()
       {2, 3, -1, 5, -1, -1, 7, -1, -1},
       {7, -1, -1, -1, -1, -1, -1, -1, 0}
     };
-  */
+  
   //Sudoku::test();
   //testGeneticAlgorithm(mat);
-  testSimulatedAnnealing();
+  //testSimulatedAnnealing();
   //testBacktrack();
   return 0;
 }
