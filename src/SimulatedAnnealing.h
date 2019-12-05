@@ -39,6 +39,6 @@ class SimulatedAnnealing
     void printCurrentBoard();
     bool log(vector<double> row);
 
-    bool run(int trialNumber);
+    bool run();
 };
 #endif
