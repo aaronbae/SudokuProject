@@ -3,6 +3,7 @@
 
 #include <random>
 #include <string>
+#include <cmath>
 #include "Sudoku.h"
 using namespace std;
 
@@ -21,5 +22,6 @@ class Utils
     // heuristics
     static char mutated_genes();
     static int fitness(Sudoku s);
+
 };
 #endif

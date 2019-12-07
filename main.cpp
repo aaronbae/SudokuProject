@@ -1,5 +1,6 @@
 #include<iostream>
 #include <ctime>
+#include "src/Utils.h"
 #include "src/Logger.h"
 #include "src/Sudoku.h"
 #include "src/SudokuGenerator.h"
@@ -25,18 +26,35 @@ void testGeneticAlgorithm(int mat[9][9])
 
 void testSimulatedAnnealing()
 {
-  Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 10);
-  SimulatedAnnealing b = SimulatedAnnealing(a);
-  b.alpha = 0.9995;
-  b.T = 4;
-  //b.numIterations = 10;
-  //b.Tmin = 2.0;
-  bool result = b.run();
-  cout << "RESULT: "<< result << endl;
+  
+  Logger bullshit;
+  int num_empty = 90;
+  bullshit.open("./logs/90.txt");
+  for(int j = 0; j < 100; j++)
+  {
+    Sudoku a = SudokuGenerator::generateGuarantee(16, 1, num_empty);
+    SimulatedAnnealing b = SimulatedAnnealing(a);
+    b.alpha = 0.9995;
+    b.T = 4;
+    b.num_neighbors = 1000;
+    b.Tmin = 2;
+    bool result = b.run();
+    cout << j << " : " << result << " , " << b.total_iteration<< endl;
+    vector<double> shit;
+    shit.push_back(j);
+    shit.push_back(result);
+    shit.push_back(b.total_iteration);
+    bullshit.log(shit);
+  }
+  bullshit.close();
 }
 void testBacktrack()
 {
-  Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 10);
+  Sudoku a = Sudoku("./boards/report_example.txt");
+  a.print();
+  //cout << "=============================================================================================="<<endl;
+  //Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 140);
+  //Sudoku a = Sudoku::benchmarkBoard(2);
   int result = Backtrack::run(a.size, a.board);
   cout << "RESULT: " << result << endl;
 }
