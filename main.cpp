@@ -28,8 +28,8 @@ void testSimulatedAnnealing()
 {
   
   Logger bullshit;
-  int num_empty = 90;
-  bullshit.open("./logs/90.txt");
+  int num_empty = 100;
+  bullshit.open_append("./logs/100.txt");
   for(int j = 0; j < 100; j++)
   {
     Sudoku a = SudokuGenerator::generateGuarantee(16, 1, num_empty);
@@ -41,7 +41,6 @@ void testSimulatedAnnealing()
     bool result = b.run();
     cout << j << " : " << result << " , " << b.total_iteration<< endl;
     vector<double> shit;
-    shit.push_back(j);
     shit.push_back(result);
     shit.push_back(b.total_iteration);
     bullshit.log(shit);

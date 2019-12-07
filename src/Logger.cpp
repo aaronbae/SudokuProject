@@ -24,6 +24,17 @@ bool Logger::open(string file_name)
     cout << "Unable to Open file: "<<file_name<<endl;
   }
 }
+bool Logger::open_append(string file_name)
+{
+  current_file = ofstream(file_name, ios_base::app);
+  if(current_file.is_open())
+  {
+    return true;
+  }
+  else {
+    cout << "Unable to Open file: "<<file_name<<endl;
+  }
+}
 void Logger::close()
 {
   current_file.close();
