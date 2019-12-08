@@ -66,6 +66,7 @@ SimulatedAnnealing::SimulatedAnnealing(double inputT, double inputTmin, double i
       val += 1;
     }
   }
+  delete countMissing;
 }
 Sudoku SimulatedAnnealing::getNeighbor()
 {
@@ -123,6 +124,7 @@ bool SimulatedAnnealing::run()
        
       if (threshold > p)
       {
+        best_neighbor.destroy();
         best_neighbor = neighbor;
         best_neighbor_score = neighborsFitnessScore;
         //cout<<"currT: "<<currTemperature<<"/"<<T<<"\tI: "<<i<<"/"<<num_neighbors<<"\tNew Fit: "<<best_neighbor_score<<"\tThresh: "<<threshold<<endl;
@@ -142,8 +144,9 @@ bool SimulatedAnnealing::run()
             iteration_logger.log(shit);
             temp_logger.log(holy);
           }
-
-          //cout<<"Solution Found "<<endl;  
+          
+          //cout<<"Solution Found "<<endl; 
+          solution.destroy();
           solution = best_neighbor;
           return true;
         }
@@ -163,6 +166,7 @@ bool SimulatedAnnealing::run()
       temp_logger.log(holy);
     }
     total_iteration += 1;
+    solution.destroy();
     solution = best_neighbor;
     currTemperature = currTemperature * alpha; // Decreases T, cooling phase
   }

@@ -44,6 +44,7 @@ void testSimulatedAnnealing()
     shit.push_back(result);
     shit.push_back(b.total_iteration);
     bullshit.log(shit);
+    a.destroy();
   }
   bullshit.close();
 }
@@ -51,11 +52,9 @@ void testBacktrack()
 {
   Sudoku a = Sudoku("./boards/report_example.txt");
   a.print();
-  //cout << "=============================================================================================="<<endl;
-  //Sudoku a = SudokuGenerator::generateGuarantee(16, 1, 140);
-  //Sudoku a = Sudoku::benchmarkBoard(2);
   int result = Backtrack::run(a.size, a.board);
   cout << "RESULT: " << result << endl;
+  a.destroy();
 }
 
 int main()
