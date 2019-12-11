@@ -14,6 +14,7 @@ using namespace std;
 
 void testGeneticAlgorithm()
 {
+  
   // Parameters for Genetic algorithm
   int population_size=10; //size of Gene pool
   int stop=0; //number of generations to run until forced to stop; to go until completion set to 0
@@ -34,8 +35,18 @@ void testGeneticAlgorithm()
       {2, 3, -1, 5, -1, -1, 7, -1, -1},
       {7, -1, -1, -1, -1, -1, -1, -1, 0}
     };
-
-
+    GeneticAlgorithm b(mat);
+    bool result = b.compute(population_size, elitism, eligible, mutation, stop);
+    cout <<  result << " , " << b.generation<< endl;
+  /*
+  Sudoku a = SudokuGenerator::generateGuarantee(9, 1, 20);
+  GeneticAlgorithm b = GeneticAlgorithm(a);
+  bool result = b.run();
+  cout << "R: " << result << endl;
+  a.destroy();
+  b.destroy();
+  */
+  /*
   for(int num_empty = 0; num_empty < MAX_EMPTY_CELLS; num_empty += 10)
   {
     Logger bullshit;
@@ -43,20 +54,20 @@ void testGeneticAlgorithm()
     for(int j = 0; j < ITERATION_PER_DIFFICULTY; j++)
     {
       Sudoku a = SudokuGenerator::generateGuarantee(16, 1, num_empty);
-      // MUST FIX THIS MAT THING
-      GeneticAlgorithm b(mat);
+      GeneticAlgorithm b = GeneticAlgorithm(a);
       
-      bool result = b.compute(population_size, elitism, eligible, mutation, stop);
-      cout << j << " : " << result << " , " << b.generation<< endl;
+      bool result = b.run();
+      cout << j << " : " << result << " , " << b.generation_count<< endl;
       vector<double> shit;
       shit.push_back(j);
       shit.push_back(result);
-      shit.push_back(b.generation);
+      shit.push_back(b.generation_count);
       bullshit.log(shit);
+      b.destroy();
       a.destroy();
     }
     bullshit.close();
-  }
+  }*/
 }
 
 void testSimulatedAnnealing()
@@ -114,8 +125,8 @@ void testBacktrack()
 int main()
 {
   //Sudoku::test();
-  //testGeneticAlgorithm();
-  testSimulatedAnnealing();
+  testGeneticAlgorithm();
+  //testSimulatedAnnealing();
   //testBacktrack();
   return 0;
 }

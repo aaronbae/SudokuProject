@@ -16,6 +16,7 @@ class Utils
     
     // ranodom provider
     static void seed();
+    static double random();
     static int randomGenerator(int num);
     static int random_num(int start, int end);
 

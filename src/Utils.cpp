@@ -6,6 +6,10 @@ void Utils::seed()
 {
   srand(time(nullptr));
 }
+double Utils::random()
+{
+  return (double) rand() / (RAND_MAX);
+}
 int Utils::randomGenerator(int num)
 {
     return (int) floor((rand()%(num)));

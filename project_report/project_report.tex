@@ -61,8 +61,60 @@
 		Our first observation of the Sudoku problem was that it can be boiled down into constraint satisfaction problem with search. The constraints are the 4 mentioned above, and the searching algorithm is needed because we need to find the correct arrangement of the numbers within a big search space that is the Sudoku puzzle. \\\\
 		For example, take a look another look at Figure 1. The cell $(2, 0)$ has the value $-1$, so it needs a value assignment. With all 4 of the constraint applied to the cell, we can see that the only possible values that can take place are $1$ and $2$. With same logic, cell $(1, 2)$ can take the values $2$, $4$, and  $7$. With all these different possibilities, there are different combinations of the number assignment that the board can have. We essentially have narrowed down Sudoku into a problem of finding the specific combination of all the possible combinations of board number assignment.\\\\
 		However, this search problem is no easy task. We estimate that there are $N$ possible values that could be assigned to any given cell $(x, y)$, and there are $N^2$ different cells that we need to assign values. Form these assumptions, we can see that the entire search space would be $N^(N^2)$. To give it a perspective of a worst case scenario, a mere 9 by 9 board would have $9^{81}$ different possibility, which a 77 digit number. 
+	\section{Genetic Algorithm}
+		The second algorithm that we developed to solve Sudoku is a Genetic Algorithm.
+		\subsection{Strength and Weaknesses of Genetic Algorithm}
+			Genetic algorithm is similar to the above local search with simulated annealing algorithm in that  they are both stochastic search methods. Therefore, we can expect this algorithm to have relatively small space requirements and able to prevent being stuck in a local minima. However, the genetic algorithm differs from the previous algorithm in 2 major ways:
+			\begin{enumerate}
+				\item Population of candidates instead of a single neighbor
+				\item Mutation function instead of neighboring function
+			\end{enumerate}
+			As you can tell from the word choices, this algorithm is inspired by the process of natural selection. The details of the implementation are explained further below, but overall, this algorithm attempts to introduce an increased amount of variability per iteration by having a group of board configuration instead of having a single individual.
+		\subsection{Description of a Population and its Mating Process}
+			The goal of this algorithm is to maintain a fixed size of a population of Sudoku board configurations in every generation, while continuously improving the overall "fitness" score. Because every iteration consists of this population, we will refer to them as a generation and a member of a generation as an individual.\\\\
+			First, given a generation, we proceed to score every individual in the generation via the fitness function mentioned in the previous section. Secondly, we randomly choose pairs of individuals from the generation to mate and produce the next generation. However, we bias this selection process so that it is more likely to select the individuals with better fitness score more often. Here is the exact outline of the algorithm:
+		\subsubsection{General Outline of the Algorithm}
+			\begin{enumerate}
+				\item initialize the population
+				\item iterate until an individual in the population is a solution (aka fitness is zero):
+					\item iterate until the next generation has desired number of individuals
+					\begin{enumerate}
+						\item select a pair of individuals from the population
+						\item mate the two individuals to create a new child individual
+						\item mutate the child at a small probability
+						\item add to the list of new generation
+						\item if the new child is a solution, return
+					\end{enumerate}
+				\item return the solution
+			\end{enumerate}
+		\subsubsection{Initialization}
+			At the start of the algorithm, we must create a population from scratch. We accomplish this by randomly assigning values into the empty cells on the board. This ensures that every individual has the maximum diversity when they start out. Having enough diversity in the beginning is not essential, but it prevents having to wait until the random mutations bring in enough diversity into the population.\\\\
+			Secondly, we need to point out that we do not need to make sure the frequency of each values are exactly the same, which is essential later for the local search with Simulated Annealing algorithm. This is because as new generations emerge we expect that the correct cells will remain and the incorrect ones will be mutated away.
+		\subsubsection{Fitness Function}
+			The fitness function implemented here involves determining whether a Sudoku value is repeated or is not present in a particular row, column, or the sub-grid. A fitness value is assigned to a possible configuration of a board based on the number of repeated or non-present integers. The more repeated or non-present integers there are in a solution's rows, columns, and sub-grid, the higher the fitness value assigned to that solution. Ultimately, the goal state would have a fitness score of 0, because it will not have any repeated or non-present integers.
+		\subsubsection{Mate Selection}
+			Using the above fitness function, we score every individual in the population and sort them lowest to highest. Then, we must select randomly, but favoring the lowest of the list of individuals. Here, we need a distribution function.\\\\
+			From the standard C++ library, we can get a uniform distributed float value between $0$ and $1$ inclusive. However, we need indexes between $0$ and the population size. Not only that, we need the indexes to occur in a specific probability curve. Since we will be ordering the population by its fitness function and the smaller the fitness score, the better, we need an inversely proportional distribution function. Here is the algorithm that we use:
+			$$\text{Index}(RV) = \text{floor}(e^{POP\_SIZE\;\cdot\;(0.23\;-\;RV)} + 0.9)$$
+			And here is a visualized plot of the function given that we have a population of size $POP\_SIZE=10$:\\
+			\begin{figure}[h]
+				\begin{center} 
+					\includegraphics[width=4in]{geneic_algorithm_probability_curve.png}
+					\caption{The index conversion function from Uniform distributed variable} 
+				\end{center} 
+			\end{figure}\\
+			The plot is basically a transposed histogram. We can see that it is designed to heavily favor the indexes 0 and 1, which will correspond to the lowest fitness scores in the population.
+		\subsubsection{Mating Function}
+			After selecting two individuals from the population, we need to be able to combine them to get a child individual. We tried a couple different ways:
+			\begin{enumerate}
+				\item uniformly select either the first parent's or the second parent's cell for every initially empty cell
+				\item uniformly select either the first parent's row or the second parent's row.
+			\end{enumerate}
+		After creating this child from the two parents, we randomly select initially empty cells to change to a random integral value.
+		\subsection{Evaluation of Genetic Algorithm}
+			As we mentioned earlier, we have tried multiple combinations of different settings of the genetic algorithm
 	\section{Local Search with Simulated Annealing}
-		The first algorithm that we developed to solve Sudoku is a local search method with simulated annealing to introduce randomness. 
+		The second algorithm that we developed to solve Sudoku is a local search method with simulated annealing to introduce randomness. 
 		\subsection{Strength and Weaknesses of Local Search}
 			A local search method takes a given state, $S$, and modifies is in small increments to find a close neighbor of the given state, $S'$. Then, we can either accept or reject new state $S'$ dependent on whether we find it closer to the goal state. This algorithm is powerful in that it does not require a large space, because at most it needs to remember two states at any given moment. However, a big drawback is that it has the possibility of being stuck in a local extrema.\\\\\
 			For example, in the context of the Sudoku board, we might reach a certain point where making any changes will make the board violate more constraints while the current state is not the goal state we are looking for. To combat this problem, we must introduce some randomness to make sure we get away from this local extrema. This is where we use simulated annealing.
@@ -92,7 +144,7 @@
 			\subsubsection{Neighborhood Function}
 				A neighbor of a given state is determined by randomly choosing two cells that are not initially filled in, and switching the values. Whether a cell was initially filled in or not is evaluated in the initialization step. Because we are changing the values of two cells, we are not introducing a new value to the board in the entirety of the local search process. Therefore, in the initialization step, ensuring the correct frequency of all the values is essential to finding the correct solution.
 			\subsubsection{Fitness Function}
-				The fitness function implemented here involves determining whether an integer is repeated or is not present in a particular row, column, or the sub-grid. A fitness value is assigned to a possible solution based on the number of repeated or non-present integers. The more repeated or non-present integers there are in a solution's rows, columns, and sub-grid, the higher the fitness value assigned to that solution. Ultimately, the goal state would have a fitness score of 0, because it will not have any repeated or non-present integers.
+				The fitness function is the same as the one implemented in the Genetic Algorithms section.
 		\subsection{Evaluation of Local Search with Simulated Annealing}
 			In order to evaluate this algorithm, we measure the success rate and total number of iterations given the number of empty cells in the initial Sudoku board. We measure these statistics according to the number of empty cells instead of the actual size of the board, because we hypothesize that the search-space complexity is only dependent on the number of empty cells.\\\\
 			For example, a 9 by 9 board has only 81 cells, whereas a 16 by 16 board has 256 cells. However, our neighborhood function only exchanges the values between empty cells, not the entire board. Therefore, if the 9 by 9 board had 50 empty cells and the 16 by 16 board had only 10 empty cells, we should expect that the 16 by 16 board would be solved faster. Therefore, we decided to measure the success rate and the total number of iterations by the total number of empty cells. Here are the results:\\
@@ -112,24 +164,7 @@
 			\end{figure}\\
 			Above is a plot of the fitness function for a successful run of a 16 by 16 board with 90 cells empty. We notice a sharp decrease in the early stages of the run, whereas the change in fitness value from $200^{th}$ iteration on-wards is imperceptible. This is where the fitness function fails to quickly identify which neighbors are actually close to the goal state. Once in this phase where the fitness score cannot guide the local search, the search becomes almost random, resulting in failure most of the time.\\\\
 			We conclude here that to achieve better results in a scaled up environment with higher difficulty, we need to be able to develop a better fitness function that can distinguish the final few changes that remain at the end of the runs.
-	\section{Genetic Algorithm}
-		The second algorithm that we implemented is a genetic algorithm. 
-		\subsection{Strength and Weaknesses of Genetic Algorithm}
-			Genetic algorithm is similar to the above local search with simulated annealing algorithm in that  they are both stochastic search methods. Therefore, we can expect this algorithm to have relatively small space requirements and able to prevent being stuck in a local minima. However, the genetic algorithm differs from the previous algorithm in 2 major ways:
-			\begin{enumerate}
-				\item Population of candidates instead of a single neighbor
-				\item Mutation function instead of neighboring function
-			\end{enumerate}
-			As you can tell from the word choices, this algorithm is inspired by the process of natural selection. The details of the implementation are explained further below, but overall, this algorithm attempts to introduce an increased amount of variability per iteration by having a group of board configuration instead of having a single individual.
-		\subsection{Description of a Population and its Mating Process}
-			The goal of this algorithm is to maintain a fixed size of a population of Sudoku board configurations in every generation, while continuously improving the overall "fitness" score. Because every iteration consists of this population, we will refer to them as a generation and a member of a generation as an individual.\\\\
-			First, given a generation, we proceed to score every individual in the generation via the fitness function mentioned in the previous section. Secondly, we randomly choose pairs of individuals from the generation to mate and produce the next generation. However, we bias this selection process so that it is more likely to select the individuals with better fitness score more often. Here is the exact outline of the algorithm:
-			\subsubsection{General Outline of the Algorithm}
-			\subsubsection{Initialization}
-			\subsubsection{Mate Selection}
-			\subsubsection{Mutation Function}
-		\subsection{Evaluation of Genetic Algorithm}
-			Similar to the way we evaluated the local search algorithm before, we measure the success rate and the number of generations from the genetic algorithm. Here are the results:
+	
 	\section{Backtracking Algorithm}
 		Last algorithm that we implemented is a non-stochastic backtracking algorithm with Arc consistency, Minimum Remaining Value ordering (MRV), and Least Constraining Value (LCV) selection.
 		\subsection{Strength and Weaknesses of Backtracking Algorithm}
